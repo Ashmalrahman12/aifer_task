@@ -1,3 +1,4 @@
+import 'package:aifer_task/image_model.dart';
 import 'package:aifer_task/image_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +15,25 @@ class _HomePageState extends State<HomePage> {
  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
         title: const Text('Discover', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
       ),
       body: Consumer<ImageListProvider>(
+        
         builder: (context, provider, child) {
+          ImageModel? topImage; 
+          if (provider.images.isNotEmpty) {
+            
+            final top = provider.images.where(
+              (img) => img.author.toLowerCase().contains('go wild')
+            );
+            
+           
+            topImage = top.isNotEmpty ? top.first : provider.images.first;
+          }
           return Column(
             children: [
               // Search Bar
@@ -41,7 +54,24 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              
+              if (topImage != null)
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: CachedNetworkImage(
+                      imageUrl: topImage.downloadUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    ),
+                  ),
+                ),
               // Image Grid
               Expanded(
                 child: _buildBody(provider),
@@ -81,7 +111,10 @@ class _HomePageState extends State<HomePage> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
+                  
+                    
                     CachedNetworkImage(
+                      
                       imageUrl: image.downloadUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
